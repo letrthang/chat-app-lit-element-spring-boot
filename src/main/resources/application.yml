@@ -1,0 +1,65 @@
+server:
+  port: ${PORT:8080}
+  servlet:
+    session:
+      timeout: 10m
+
+spring:
+  devtools:
+    restart:
+      enabled: 'false'
+  application:
+    name: hackathon
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        implicit-strategy: org.hibernate.boot.model.naming.SpringImplicitNamingStrategy
+        physical-strategy: org.hibernate.boot.model.naming.SpringPhysicalNamingStrategy
+        enable_lazy_load_no_trans: true
+        query:
+          plan_paramter_metadata_max_size: '32'
+          plan_cache_max_siz: '32'
+        show_sql: 'false'
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+    hibernate:
+      ddl-auto: none
+
+  datasource:
+    hikari:
+      connection-timeout: '60000'
+      pool-name: DataHikariCP
+      idle-timeout: '60000'
+      maximum-pool-size: '100'
+      max-lifetime: '1800000'
+      connection-test-query: select 1
+      minimum-idle: '10'
+      schema: public
+    password: "AVNS_Eja3TH_X70DejjTjgk-" # remember to turn on aiven cloud service
+    username: avnadmin
+    url: jdbc:postgresql://hackathon-hackathon-sgp.i.aivencloud.com:24239/defaultdb?sslmode=require&prepareThreshold=0
+    type: com.zaxxer.hikari.HikariDataSource
+
+  web:
+    resources:
+      static-locations: classpath:/static/
+      add-mappings: true
+  mvc:
+      static-path-pattern: /**
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  servlet:
+    multipart:
+      max-file-size: 20MB
+
+logging:
+  level:
+    org:
+      atmosphere: warn
+    com.lecompany.iad: debug

@@ -1,0 +1,20 @@
+{
+  "name": "chat-app-frontend",
+  "version": "1.0.0",
+  "description": "Chat application frontend with Lit Element v3",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npx serve -p 3000",
+    "dev": "npm run build:watch & npm run serve"
+  },
+  "dependencies": {
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "serve": "^14.0.0"
+  }
+}
