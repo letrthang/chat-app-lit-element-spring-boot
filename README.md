@@ -1,7 +1,5 @@
 # Java Web + Database Exercise 2: Infinite Level Messaging System
 
-[https://github.com/recruitment-vn/recruitment-java-backend-comments-tree-homework-LeTrungThang](https://github.com/recruitment-vn/recruitment-java-backend-comments-tree-homework-LeTrungThang)
-
 ## How to Run Project
 
 This project is built with Spring boot 3, Java 22 and Lit 3 (https://lit.dev) for frontend, Maven build tool, https://aiven.io for PostgreSQL DB.
