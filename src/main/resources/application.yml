@@ -37,7 +37,7 @@ spring:
       connection-test-query: select 1
       minimum-idle: '10'
       schema: public
-    password: "" # remember to turn on aiven cloud service. AVNS_Eja3TH_X70DejjTjgk-
+    password: "" # remember to turn on aiven cloud service.
     username: avnadmin
     url: jdbc:postgresql://hackathon-hackathon-sgp.i.aivencloud.com:24239/defaultdb?sslmode=require&prepareThreshold=0
     type: com.zaxxer.hikari.HikariDataSource
