@@ -23,7 +23,7 @@ spring:
         show_sql: 'false'
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: v1
+        default_schema: public
     hibernate:
       ddl-auto: none
 
@@ -36,12 +36,18 @@ spring:
       max-lifetime: '1800000'
       connection-test-query: select 1
       minimum-idle: '10'
-      schema: v1
-    password: postgres
-    username: postgres
-    url: jdbc:postgresql://localhost:5432/mortgage?sslmode=disable&prepareThreshold=0
+      schema: public
+    password: "AVNS_Eja3TH_X70DejjTjgk-" # remember to turn on aiven cloud service.
+    username: avnadmin
+    url: jdbc:postgresql://hackathon-hackathon-sgp.i.aivencloud.com:24239/defaultdb?sslmode=require&prepareThreshold=0
     type: com.zaxxer.hikari.HikariDataSource
 
+  web:
+    resources:
+      static-locations: classpath:/static/
+      add-mappings: true
+  mvc:
+      static-path-pattern: /**
 
   rabbitmq:
     host: localhost
