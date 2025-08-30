@@ -39,7 +39,7 @@ spring:
       schema: v1
     password: postgres
     username: postgres
-    url: jdbc:postgresql://localhost:5432/mortgage?sslmode=disable&prepareThreshold=0
+    url: jdbc:postgresql://localhost:5432/postgres?sslmode=disable&prepareThreshold=0
     type: com.zaxxer.hikari.HikariDataSource
 
 
