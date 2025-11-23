@@ -2,7 +2,7 @@
 
 ## How to Run Project
 
-This project is built with Spring boot 3, Java 22 and Lit 3 (https://lit.dev) for frontend, Maven build tool, PostgreSQL DB using local DB or https://aiven.io.
+This project is built with Spring boot 4, Java 25 and Lit 3 (https://lit.dev) for frontend, Maven build tool, PostgreSQL DB using local DB or https://aiven.io.
 
 ### Install dependencies (first time only)
 
