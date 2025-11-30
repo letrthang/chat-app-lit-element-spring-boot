@@ -80,6 +80,7 @@ Create a simple "tree-structured message board" website using Java and a databas
 - You can use ORM or raw SQL for database queries.
 - The backend should provide a RESTful API with proper permission checks, HTTP methods, and HTTP codes.
 - Ensure no significant performance issues with deeply nested comments (e.g., over several dozen layers).
+- Enable JWT
 - Include appropriate unit tests.
 
 ## How to submit assignments
