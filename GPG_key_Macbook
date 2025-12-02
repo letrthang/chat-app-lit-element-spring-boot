@@ -1,0 +1,6 @@
+cd /path/to/iattendance2 and run:
+
+git config user.name "Thang Le"
+git config user.email "letrthang@gmail.com"
+git config user.signingkey 7DD582CE4505915D8B57A9D44DC37EF997BB89B5
+git config commit.gpgsign true
