@@ -1,10 +1,11 @@
 package com.messageboard.config;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.stereotype.Component;
-import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value; // New import for @Value
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
@@ -14,13 +15,19 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
+
+    // Inject secret string from application.properties
+    @Value("${jwt.secret}")
+    private String secretString;
+
     private SecretKey secretKey;
-    private final long JWT_TOKEN_VALIDITY = 5 * 60 * 60; // 5 hours
+    // 5 hours in seconds * 1000 ms/sec = 18,000,000 milliseconds
+    private final long JWT_TOKEN_VALIDITY_MS = 5 * 60 * 60 * 1000;
 
     @PostConstruct
     public void init() {
-        // Generate a secure key for HS256
-        this.secretKey = Keys.secretKeyFor(io.jsonwebtoken.SignatureAlgorithm.HS256);
+        // Initialize the SecretKey from the configured string (safe, persistent key)
+        this.secretKey = Keys.hmacShaKeyFor(secretString.getBytes());
     }
 
     public String extractEmail(String token) {
@@ -37,7 +44,8 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
+        // Using Jwts.parser() which replaces Jwts.parserBuilder() in the latest API
+        return Jwts.parser()
                 .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
@@ -45,7 +53,13 @@ public class JwtUtil {
     }
 
     private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        // Add error handling here if token is invalid before extracting
+        try {
+            return extractExpiration(token).before(new Date());
+        } catch (Exception e) {
+            // Token is likely invalid or malformed if extraction fails
+            return true;
+        }
     }
 
     public String generateToken(String email) {
@@ -58,13 +72,21 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
-                .signWith(secretKey)
+                // Use the correct millisecond constant
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY_MS))
+                // Use the modern signature algorithm style
+                .signWith(secretKey, Jwts.SIG.HS256)
                 .compact();
     }
 
     public Boolean validateToken(String token, String userEmail) {
-        final String email = extractEmail(token);
-        return (email.equals(userEmail) && !isTokenExpired(token));
+        try {
+            final String email = extractEmail(token);
+            return (email.equals(userEmail) && !isTokenExpired(token));
+        } catch (Exception e) {
+            // Log the exception (e.g., ExpiredJwtException, SignatureException)
+            System.err.println("JWT Validation failed: " + e.getMessage());
+            return false;
+        }
     }
 }

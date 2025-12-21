@@ -30,7 +30,7 @@ public class MessageResponse {
     public MessageResponse(Message message) {
         this.id = message.getId();
         this.content = message.getContent();
-        this.userName = message.getUser().getUserName();
+        this.userName = message.getUser().getUsername();
         this.userId = message.getUser().getId();
         this.createdAt = message.getCreatedAt();
         this.messageType = message.getMessageType().toString();

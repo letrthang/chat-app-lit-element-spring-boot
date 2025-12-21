@@ -18,7 +18,7 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository userService;
+    private final UserRepository userService; // Should be a service/repository returning User
 
     public JwtAuthFilter(JwtUtil jwtUtil, UserRepository userService) {
         this.jwtUtil = jwtUtil;
@@ -33,27 +33,43 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
+        // 1. Check for Authorization header and Bearer scheme
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // 2. Extract JWT and user email
         jwt = authHeader.substring(7);
         userEmail = jwtUtil.extractEmail(jwt);
 
+        // 3. Check if email is present and user is NOT already authenticated
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            // Note: User must have a getAuthorities() method or equivalent for real security
             User userDetails = userService.findByEmail(userEmail).orElse(null);
 
-            if (jwtUtil.validateToken(jwt, userEmail)) {
+            // 4. Validate the token and user details
+            if (userDetails != null && jwtUtil.validateToken(jwt, userEmail)) {
+
+                // Create the authentication token using user details and authorities
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
-                        java.util.Collections.emptyList()
+                        userDetails.getAuthorities() // IMPORTANT: Use real authorities/roles here!
+                        // Using Collections.emptyList() as a temporary placeholder is okay if User implements UserDetails
+                        // java.util.Collections.emptyList()
                 );
+
+                // Set authentication details
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // 5. Set the authenticated user in the Security Context
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+
+        // Continue the filter chain
         filterChain.doFilter(request, response);
     }
 }

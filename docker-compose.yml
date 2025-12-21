@@ -1,0 +1,174 @@
+version: "3.8"
+
+# authors = "Thang Le (thang.le@lecompany.co)"
+# version = "1.0 - init version"
+
+services:
+  iattendance_app_1:
+    build: ./
+    ports:
+      - "9091:9090"
+      - "8001:8000" # JDPA debugging port
+    depends_on:
+      - redis
+      - rabbitmq
+      - postgres
+    links:
+      - redis
+      - rabbitmq
+      - postgres
+    environment:
+      - WAIT_HOSTS=postgres:5432, rabbitmq:5672, redis:6379
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=1
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+      - NNC.SYS.ENV=local-docker-compose
+      - PROD_RABBITMQ_HOST=rabbitmq
+      - PROD_RABBITMQ_PORT=5672
+      - PROD_RABBITMQ_USER=guest
+      - PROD_RABBITMQ_PASSWORD=guest
+      - PROD_POSTGRES_SCHEMA=v1
+      - PROD_POSTGRES_USER=postgres
+      - PROD_POSTGRES_PASSWORD=postgres
+      - PROD_POSTGRES_HOST=postgres
+      - PROD_POSTGRES_PORT=5432
+      - PROD_REDIS_HOST=redis
+      - PROD_REDIS_PORT=6379
+    volumes:
+      - './target/iattendance-1.0.jar:/app/iattendance.jar'
+    restart: on-failure
+
+  iattendance_app_2:
+    build: ./
+    ports:
+      - "9092:9090"
+      - "8002:8000" # JDPA debugging port
+    depends_on:
+      - redis
+      - rabbitmq
+      - postgres
+    links:
+      - redis
+      - rabbitmq
+      - postgres
+    environment:
+      - WAIT_HOSTS=postgres:5432, rabbitmq:5672, redis:6379
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=1
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+      - NNC.SYS.ENV=local-docker-compose
+      - PROD_RABBITMQ_HOST=rabbitmq
+      - PROD_RABBITMQ_PORT=5672
+      - PROD_RABBITMQ_USER=guest
+      - PROD_RABBITMQ_PASSWORD=guest
+      - PROD_POSTGRES_SCHEMA=v1
+      - PROD_POSTGRES_USER=postgres
+      - PROD_POSTGRES_PASSWORD=postgres
+      - PROD_POSTGRES_HOST=postgres
+      - PROD_POSTGRES_PORT=5432
+      - PROD_REDIS_HOST=redis
+      - PROD_REDIS_PORT=6379
+    volumes:
+      - './target/iattendance-1.0.jar:/app/iattendance.jar'
+    restart: on-failure
+
+  iattendance_app_3:
+    build: ./
+    ports:
+      - "9093:9090"
+      - "8003:8000" # JDPA debugging port
+    depends_on:
+      - redis
+      - rabbitmq
+      - postgres
+    links:
+      - redis
+      - rabbitmq
+      - postgres
+    environment:
+      - WAIT_HOSTS=postgres:5432, rabbitmq:5672, redis:6379
+      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8000
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=1
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+      - NNC.SYS.ENV=local-docker-compose
+      - PROD_RABBITMQ_HOST=rabbitmq
+      - PROD_RABBITMQ_PORT=5672
+      - PROD_RABBITMQ_USER=guest
+      - PROD_RABBITMQ_PASSWORD=guest
+      - PROD_POSTGRES_SCHEMA=v1
+      - PROD_POSTGRES_USER=postgres
+      - PROD_POSTGRES_PASSWORD=postgres
+      - PROD_POSTGRES_HOST=postgres
+      - PROD_POSTGRES_PORT=5432
+      - PROD_REDIS_HOST=redis
+      - PROD_REDIS_PORT=6379
+    volumes:
+      - './target/iattendance-1.0.jar:/app/iattendance.jar'
+    restart: on-failure
+
+  haproxy:
+    build: ./haproxy
+    ports:
+      - "8443:8443"
+      # host port should be 8080 to avoid Vaadin denying processing heartbeat request message
+      - "9094:9090"
+    depends_on:
+      - iattendance_app_1
+      - iattendance_app_2
+      - iattendance_app_3
+    links:
+      - iattendance_app_1
+      - iattendance_app_2
+      - iattendance_app_3
+    environment:
+      # Change the line below if we scale number of instances.
+      - WAIT_HOSTS=iattendance_app_1:9090, iattendance_app_2:9090, iattendance_app_3:9090
+      - WAIT_HOSTS_TIMEOUT=3600
+      - WAIT_SLEEP_INTERVAL=1
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+    volumes:
+      - './haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg'
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command: http host.docker.internal:9090 # Points to your localhost:9090
+    ports:
+      - "4040:4040" # ngrok web interface: http://localhost:4040/
+    environment:
+      - NGROK_AUTHTOKEN=1eAWOQXMP3lAh16PI3mF5vvY6Il_6kxyybnTEiGHfWRrWJAGn # Your ngrok auth token
+
+  postgres:
+    image: 'bitnami/postgresql:18.1'
+    #volumes:
+      #- ./src/main/resources/v1_iattendance_schema_prd.sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - TZ=GMT+0
+      - PGTZ=GMT+0
+
+  redis:
+    image: 'valkey/valkey:latest'
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - VALKEY_PASSWORD=
+
+  rabbitmq:
+    image: 'rabbitmq:4.2.1-management'
+    ports:
+      - "4369:4369"
+      - "5672:5672"
+      - "25672:25672"
+      - "15672:15672" # web: http://localhost:15672/
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest

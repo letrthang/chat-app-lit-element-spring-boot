@@ -65,7 +65,7 @@ public class UserService {
         // In production, generate a proper JWT token
         String token = "dummy-token-" + user.getId();
 
-        return new AuthResponse(user.getId(), user.getUserName(), user.getEmail(), token);
+        return new AuthResponse(user.getId(), user.getUsername(), user.getEmail(), token);
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -79,7 +79,7 @@ public class UserService {
         // In production, generate a proper JWT token
         String token = "dummy-token-" + user.getId();
 
-        return new AuthResponse(user.getId(), user.getUserName(), user.getEmail(), token);
+        return new AuthResponse(user.getId(), user.getUsername(), user.getEmail(), token);
     }
 
     public User getCurrentUser(Long userId) {

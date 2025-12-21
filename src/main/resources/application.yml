@@ -23,7 +23,7 @@ spring:
         show_sql: 'false'
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        default_schema: v1
+        default_schema: v2
     hibernate:
       ddl-auto: none
 
@@ -36,21 +36,18 @@ spring:
       max-lifetime: '1800000'
       connection-test-query: select 1
       minimum-idle: '10'
-      schema: v1
+      schema: v2
     password: postgres
     username: postgres
     url: jdbc:postgresql://localhost:5432/postgres?sslmode=disable&prepareThreshold=0
     type: com.zaxxer.hikari.HikariDataSource
 
-
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
   servlet:
     multipart:
       max-file-size: 20MB
+
+jwt:
+  secret: 12345678abcdefig12345678abcdefig
 
 logging:
   level:

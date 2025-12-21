@@ -24,6 +24,8 @@ This project is built with Spring boot 4, Java 25 and Lit 3 (https://lit.dev) fo
 
 Access home page: `http://localhost:8080`
 
+Swagger API: `http://localhost:8080/swagger-ui/index.html`
+
 ![Home page](./src/docs/home.png)
 
 ## Difficulty:
@@ -83,12 +85,4 @@ Create a simple "tree-structured message board" website using Java and a databas
 - Enable JWT
 - Include appropriate unit tests.
 
-## How to submit assignments
-
-1. Due to confidentiality, this repo does not support forks.
-2. Clone locally using the git:// protocol (https:// might prevent pushing).
-3. Create a new branch locally, complete your work, and push it directly to this repo.
-4. Create a PR from the branch, but do not merge the PR.
-5. You can leave comments on the PR, such as "Completed," and we'll get notified to schedule a review.
-6. Submit only the necessary code and files. Be careful not to submit zip files.
 

@@ -20,7 +20,7 @@ public class UserResponse {
     // Constructor from Entity
     public UserResponse(User user) {
         this.id = user.getId();
-        this.userName = user.getUserName();
+        this.userName = user.getUsername();
         this.email = user.getEmail();
         this.createdDate = user.getCreatedDate();
     }
@@ -29,7 +29,7 @@ public class UserResponse {
     public static UserResponse from(User user) {
         return UserResponse.builder()
                 .id(user.getId())
-                .userName(user.getUserName())
+                .userName(user.getUsername())
                 .email(user.getEmail())
                 .createdDate(user.getCreatedDate())
                 .build();
