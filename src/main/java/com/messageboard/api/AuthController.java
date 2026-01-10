@@ -2,6 +2,7 @@ package com.messageboard.api;
 
 import com.messageboard.dto.AuthResponse;
 import com.messageboard.dto.LoginRequest;
+import com.messageboard.dto.RefreshTokenRequest;
 import com.messageboard.dto.RegisterRequest;
 import com.messageboard.repository.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -29,5 +30,17 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = userService.login(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        AuthResponse response = userService.refreshToken(request.getRefreshToken());
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader("User-Id") Long userId) {
+        userService.logout(userId);
+        return ResponseEntity.ok().build();
     }
 }

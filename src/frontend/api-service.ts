@@ -4,6 +4,7 @@ export interface User {
     userName: string;
     email: string;
     token?: string;
+    refreshToken?: string;
 }
 
 export interface Message {
@@ -36,8 +37,10 @@ export interface MessageRequest {
 
 export class ApiService {
     static baseURL = 'http://localhost:8080/api';
+    private static isRefreshing = false;
+    private static refreshPromise: Promise<User> | null = null;
 
-    static async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    static async request<T>(endpoint: string, options: RequestInit = {}, isRetry = false): Promise<T> {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
 
         // Create headers as a Record type to allow string indexing
@@ -60,6 +63,11 @@ export class ApiService {
             }
         }
 
+        // Add JWT token in Authorization header
+        if (user.token && endpoint !== '/auth/refresh') {
+            headers['Authorization'] = `Bearer ${user.token}`;
+        }
+
         if (user.id) {
             headers['User-Id'] = user.id.toString();
         }
@@ -69,12 +77,67 @@ export class ApiService {
             headers
         });
 
+        // Handle 401 - token expired
+        if (response.status === 401 && !isRetry && endpoint !== '/auth/login' && endpoint !== '/auth/register' && endpoint !== '/auth/refresh') {
+            try {
+                // Refresh the token
+                const newUser = await this.refreshAccessToken();
+
+                // Retry the original request with new token
+                return this.request<T>(endpoint, options, true);
+            } catch (refreshError) {
+                // Refresh failed, redirect to login
+                localStorage.removeItem('user');
+                window.dispatchEvent(new CustomEvent('auth-expired'));
+                throw new Error('Session expired. Please login again.');
+            }
+        }
+
         if (!response.ok) {
-            const error = await response.json();
+            const error = await response.json().catch(() => ({ error: 'Request failed' }));
             throw new Error(error.error || 'Request failed');
         }
 
         return response.json();
+    }
+
+    private static async refreshAccessToken(): Promise<User> {
+        // Prevent multiple simultaneous refresh attempts
+        if (this.isRefreshing && this.refreshPromise) {
+            return this.refreshPromise;
+        }
+
+        this.isRefreshing = true;
+        this.refreshPromise = (async () => {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+                if (!user.refreshToken) {
+                    throw new Error('No refresh token available');
+                }
+
+                const response = await fetch(`${this.baseURL}/auth/refresh`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ refreshToken: user.refreshToken })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Refresh token expired');
+                }
+
+                const newUser: User = await response.json();
+                localStorage.setItem('user', JSON.stringify(newUser));
+                return newUser;
+            } finally {
+                this.isRefreshing = false;
+                this.refreshPromise = null;
+            }
+        })();
+
+        return this.refreshPromise;
     }
 
     static login(userName: string, password: string): Promise<User> {
@@ -104,5 +167,11 @@ export class ApiService {
 
     static getReplies(messageId: number): Promise<Message[]> {
         return this.request<Message[]>(`/messages/${messageId}/replies`);
+    }
+
+    static logout(): Promise<void> {
+        return this.request<void>('/auth/logout', {
+            method: 'POST'
+        });
     }
 }

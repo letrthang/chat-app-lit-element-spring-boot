@@ -151,6 +151,20 @@ export class ChatApp extends LitElement {
         if (this.user) {
             this.loadPosts();
         }
+
+        // Listen for auth expiration (refresh token expired)
+        window.addEventListener('auth-expired', this.handleAuthExpired);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        window.removeEventListener('auth-expired', this.handleAuthExpired);
+    }
+
+    private handleAuthExpired = () => {
+        this.user = null;
+        this.posts = [];
+        alert('Your session has expired. Please login again.');
     }
 
     private handleLogin(e: CustomEvent) {
@@ -158,10 +172,18 @@ export class ChatApp extends LitElement {
         this.loadPosts();
     }
 
-    private handleLogout() {
-        localStorage.removeItem('user');
-        this.user = null;
-        this.posts = [];
+    private async handleLogout() {
+        try {
+            // Call backend to invalidate refresh token
+            await ApiService.logout();
+        } catch (error) {
+            console.error('Logout API call failed:', error);
+        } finally {
+            // Always clear local state
+            localStorage.removeItem('user');
+            this.user = null;
+            this.posts = [];
+        }
     }
 
     private async loadPosts() {

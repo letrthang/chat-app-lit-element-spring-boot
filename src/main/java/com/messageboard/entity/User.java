@@ -47,6 +47,10 @@ public class User implements UserDetails { // <-- IMPLEMENTS UserDetails
     @Builder.Default
     private String role = "ROLE_USER"; // Default all new users to 'ROLE_USER'
 
+    @JsonIgnore
+    @Column(name = "refresh_token", length = 512)
+    private String refreshToken;
+
     @Column(name = "created_date", nullable = false)
     @Builder.Default
     private Timestamp createdDate = Timestamp.from(Instant.now());

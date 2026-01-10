@@ -21,8 +21,10 @@ public class JwtUtil {
     private String secretString;
 
     private SecretKey secretKey;
-    // 5 hours in seconds * 1000 ms/sec = 18,000,000 milliseconds
-    private final long JWT_TOKEN_VALIDITY_MS = 5 * 60 * 60 * 1000;
+    // Access token: 15 minutes
+    private final long JWT_TOKEN_VALIDITY_MS = 15 * 60 * 1000;
+    // Refresh token: 7 days
+    private final long REFRESH_TOKEN_VALIDITY_MS = 7 * 24 * 60 * 60 * 1000L;
 
     @PostConstruct
     public void init() {
@@ -67,6 +69,9 @@ public class JwtUtil {
         return createToken(claims, email);
     }
 
+    /**
+     * Builds signed JWT with subject, timestamps, and expiration
+     */
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)
@@ -86,6 +91,43 @@ public class JwtUtil {
         } catch (Exception e) {
             // Log the exception (e.g., ExpiredJwtException, SignatureException)
             System.err.println("JWT Validation failed: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Generates a refresh token with longer expiration
+     */
+    public String generateRefreshToken(String email) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("type", "refresh");
+        return createRefreshToken(claims, email);
+    }
+
+    /**
+     * Creates a refresh token with extended validity
+     */
+    private String createRefreshToken(Map<String, Object> claims, String subject) {
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY_MS))
+                .signWith(secretKey, Jwts.SIG.HS256)
+                .compact();
+    }
+
+    /**
+     * Validates refresh token
+     */
+    public Boolean validateRefreshToken(String token, String userEmail) {
+        try {
+            final String email = extractEmail(token);
+            final Claims claims = extractAllClaims(token);
+            String tokenType = (String) claims.get("type");
+            return (email.equals(userEmail) && !isTokenExpired(token) && "refresh".equals(tokenType));
+        } catch (Exception e) {
+            System.err.println("Refresh token validation failed: " + e.getMessage());
             return false;
         }
     }
