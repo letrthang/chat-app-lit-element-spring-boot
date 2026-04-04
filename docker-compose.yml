@@ -14,7 +14,7 @@ services:
       - NGROK_AUTHTOKEN=1eAWOQXMP3lAh16PI3mF5vvY6Il_6kxyybnTEiGHfWRrWJAGn # Your ngrok auth token
 
   postgres:
-    image: 'bitnami/postgresql:18.1'
+    image: 'bitnami/postgresql:18.3'
     #volumes:
       #- ./src/main/resources/v1_iattendance_schema_prd.sql:/docker-entrypoint-initdb.d
     ports:
@@ -35,7 +35,7 @@ services:
       - VALKEY_PASSWORD=
 
   rabbitmq:
-    image: 'rabbitmq:4.2.1-management'
+    image: 'rabbitmq:4.2.5-management'
     ports:
       - "4369:4369"
       - "5672:5672"
